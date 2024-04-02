@@ -35,13 +35,9 @@ void die(const char *s) {
 
 void stream2Socket(int sock) {
     char buffer[262144];
-    std::freopen(nullptr, "rb", stdin);
-    if (std::ferror(stdin)) {
-        die(std::strerror(errno));
-    }
     std::size_t haveRead;
     while ((haveRead = std::fread(buffer, sizeof(buffer[0]), sizeof(buffer), stdin))) {
-        if (send(sock, buffer, haveRead, 0) < 0) {
+        if (send(sock, buffer, (int) haveRead, 0) < 0) {
             die("send failed");
         }
     }
