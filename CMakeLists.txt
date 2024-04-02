@@ -15,5 +15,5 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 add_executable(netcat src/main.cpp)
 
 if(WIN32)
-  target_link_libraries(NetworkApp wsock32 ws2_32)
+  target_link_libraries(netcat wsock32 ws2_32)
 endif()
