@@ -7,6 +7,8 @@
 #ifdef _WIN32
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #include <io.h>
+    #include <fcntl.h>
     #pragma comment(lib, "Ws2_32.lib")
     #define CLOSESOCKET closesocket
     #define SOCKLEN int
@@ -33,9 +35,13 @@ void die(const char *s) {
 
 void stream2Socket(int sock) {
     char buffer[262144];
-    while (!std::cin.eof()) {
-        std::cin.read(buffer, sizeof(buffer));
-        if (send(sock, buffer, std::cin.gcount(), 0) < 0) {
+    std::freopen(nullptr, "rb", stdin);
+    if (std::ferror(stdin)) {
+        die(std::strerror(errno));
+    }
+    std::size_t haveRead;
+    while ((haveRead = std::fread(buffer, sizeof(buffer[0]), sizeof(buffer), stdin))) {
+        if (send(sock, buffer, haveRead, 0) < 0) {
             die("send failed");
         }
     }
@@ -157,13 +163,15 @@ int main(int argc, char *argv[]) {
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         die("WSAStartup failed");
     }
+    _setmode(_fileno(stdin), _O_BINARY);
+    _setmode(_fileno(stdout), _O_BINARY);
     #endif
 
     if (server) {
         server_mode(port, inbound);
     } else {
         client_mode(host, port, inbound);
-    } 
+    }
     return 0;
 
     #ifdef _WIN32
@@ -171,4 +179,3 @@ int main(int argc, char *argv[]) {
     #endif
     return 0;
 }
-
